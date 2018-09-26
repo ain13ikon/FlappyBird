@@ -22,12 +22,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     //スコア
     var score = 0
-    let userDefaults:UserDefaults = UserDefaults.standard       //memo:ベストスコアを保存するのに用いる
+    let userDefaults:UserDefaults = UserDefaults.standard       //memo:データを保存するのに用いる
     var scoreLabelNode: SKLabelNode!
     var bestScoreLabelNode: SKLabelNode!
 
     //SKView上にシーンが表示された時に呼ばれるメソッド
-    //メモ：画面構成や初期設定に関する処理を記述する
+    //画面構成や初期設定に関する処理を記述する
     override func didMove(to view: SKView) {
         // 重力を設定
         physicsWorld.gravity = CGVector(dx: 0.0, dy: -2.0)
@@ -53,6 +53,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
     }
     
+    //スコアラベルノードの初期設定を行う
     func setupScoreLabel() {
         score = 0
         scoreLabelNode = SKLabelNode()
@@ -74,7 +75,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         self.addChild(bestScoreLabelNode)
     }
     
-
+    //鳥を作成する
     func setBird(){
         // 鳥の画像を2種類読み込む
         let birdTextureA = SKTexture(imageNamed: "bird_a")
@@ -108,6 +109,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(bird)
     }
     
+    //雲を作成する
     func setCloud(){
         //雲画像を読み込む、画質・処理速度の設定
         let cloudTexture = SKTexture(imageNamed: "cloud")
@@ -136,6 +138,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    //地面を作成する
     func setGround(){
         //地面画像を読み込む
         let groundTexture = SKTexture(imageNamed: "ground") //SKTextureは画像を扱うもの
@@ -189,6 +192,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    //壁を作成してwallNodeに追加する（wallNodeはscrollNodeに追加済み）
     func setWall(){
         //壁画像を読み込む、画質・処理速度の設定
         let wallTexture = SKTexture(imageNamed: "wall")
@@ -289,7 +293,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             bird.physicsBody?.applyImpulse(CGVector(dx: 0, dy: 10))
         }else if bird.speed == 0{
             //ゲームオーバーの場合(鳥が止まっている)//
-                //単にelseとしないのはスクロールが止まってから鳥が落ちるまでの時間差でタップされ反応するのを防ぐため？
+            //memo:単にelseとしないのはスクロールが止まってから鳥が落ちるまでの時間差でタップされ反応するのを防ぐため？
             //リスタートさせる
             restart()
         }
@@ -319,8 +323,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 userDefaults.set(bestScore, forKey: "BEST")
                 userDefaults.synchronize()
             }
-            
-            
         } else {
             // 壁か地面と衝突した
             print("GameOver")

@@ -19,11 +19,9 @@ class ViewController: UIViewController {
         let skView = self.view as! SKView
 
         //FPSを表示する
-        //FPSとは１秒あたりに表示されるフレームの数（frames per secondの略）
         skView.showsFPS = true
         
         //ノードの数を表示する
-        //ノードは画面構成要素(画像、テキストなど)
         skView.showsNodeCount = true
         
         //ビューと同じサイズでシーンを作成する
