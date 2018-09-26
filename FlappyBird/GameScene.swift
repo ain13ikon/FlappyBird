@@ -8,12 +8,14 @@
 
 import SpriteKit
 
+
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     var scrollNode: SKNode!
     var wallNode: SKNode!
     var itemNode: SKNode!
     var bird: SKSpriteNode!
+
     
     //衝突判定用カテゴリー
     let birdCategory: UInt32 = 1 << 0       // 0...00001
@@ -47,6 +49,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //壁用のノード
         wallNode = SKNode()
         scrollNode.addChild(wallNode)
+        
         
         setCloud()
         setGround()
@@ -375,6 +378,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let roll = SKAction.rotate(byAngle: CGFloat(Double.pi) * CGFloat(bird.position.y) * 0.01, duration:1)
             bird.run(roll, completion:{
                 self.bird.speed = 0
+                //self.audioPlayer.stop()
             })
         }
         
@@ -391,11 +395,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         let moveAction = SKAction.moveBy(x: 0, y: 20, duration: 0.5)
         let fadeOutAction = SKAction.fadeOut(withDuration: 0.5)
-        //let actions = SKAction.sequence([moveAction, fadeOutAction])
-        
-        //pointLabelNode.run(actions)
-        pointLabelNode.run(moveAction)
-        pointLabelNode.run(fadeOutAction, completion: {
+        let actions = SKAction.group([moveAction, fadeOutAction])
+        pointLabelNode.run(actions, completion: {
             pointLabelNode.removeFromParent()
         })
         addChild(pointLabelNode)
@@ -440,6 +441,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         bird.speed = 1
         scrollNode.speed = 1
+        
+        //self.audioPlayer.play()
         
     }
 
