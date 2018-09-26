@@ -57,6 +57,8 @@ class ViewController: UIViewController, AVAudioPlayerDelegate {
         audioPlayer.delegate = self
         audioPlayer.prepareToPlay()
         
+        audioPlayer.numberOfLoops = -1 //ループ
+        
         audioPlayer.play()
 
     }

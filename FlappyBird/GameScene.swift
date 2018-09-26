@@ -7,15 +7,18 @@
 //
 
 import SpriteKit
+import AVFoundation
 
 
-class GameScene: SKScene, SKPhysicsContactDelegate {
+class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     
     var scrollNode: SKNode!
     var wallNode: SKNode!
     var itemNode: SKNode!
     var bird: SKSpriteNode!
-
+    
+    var itemSePlayer: AVAudioPlayer!
+    var gameOverSePlayer: AVAudioPlayer!
     
     //衝突判定用カテゴリー
     let birdCategory: UInt32 = 1 << 0       // 0...00001
@@ -57,6 +60,49 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setBird()
         
         setupScoreLabel()
+        
+        // アイテム取得SEの読み込み。
+        var audioPath = Bundle.main.path(forResource: "decision26", ofType:"mp3")!
+        var audioUrl = URL(fileURLWithPath: audioPath)
+        
+        // auido を再生するプレイヤーを作成する
+        var audioError:NSError?
+        do {
+            itemSePlayer = try AVAudioPlayer(contentsOf: audioUrl)
+        } catch let error as NSError {
+            audioError = error
+            itemSePlayer = nil
+        }
+        
+        // エラーが起きたとき
+        if let error = audioError {
+            print("Error \(error.localizedDescription)")
+        }
+        
+        //再生
+        itemSePlayer.delegate = self
+        itemSePlayer.prepareToPlay()
+        
+        // ゲームオーバーSEの読み込み。
+        audioPath = Bundle.main.path(forResource: "incorrect2", ofType:"mp3")!
+        audioUrl = URL(fileURLWithPath: audioPath)
+        
+        // auido を再生するプレイヤーを作成する
+        do {
+            gameOverSePlayer = try AVAudioPlayer(contentsOf: audioUrl)
+        } catch let error as NSError {
+            audioError = error
+            gameOverSePlayer = nil
+        }
+        
+        // エラーが起きたとき
+        if let error = audioError {
+            print("Error \(error.localizedDescription)")
+        }
+        
+        //再生
+        gameOverSePlayer.delegate = self
+        gameOverSePlayer.prepareToPlay()
         
     }
     
@@ -367,6 +413,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else {
             // 壁か地面と衝突した
             print("GameOver")
+            gameOverSePlayer.play()
             
             // スクロールを停止させる
             scrollNode.speed = 0    //全てのノード・スプライトをscrollNodeに追加しているのでまとめて止められる？
@@ -378,7 +425,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let roll = SKAction.rotate(byAngle: CGFloat(Double.pi) * CGFloat(bird.position.y) * 0.01, duration:1)
             bird.run(roll, completion:{
                 self.bird.speed = 0
-                //self.audioPlayer.stop()
+                //audioPlayer.stop()
             })
         }
         
@@ -400,6 +447,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             pointLabelNode.removeFromParent()
         })
         addChild(pointLabelNode)
+        
+        itemSePlayer.play()
         
         //アイテムスコアを増やす
         itemScore += 1
@@ -442,7 +491,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bird.speed = 1
         scrollNode.speed = 1
         
-        //self.audioPlayer.play()
+        //audioPlayer.play()
         
     }
 
