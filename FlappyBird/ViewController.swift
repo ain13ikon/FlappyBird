@@ -43,7 +43,7 @@ class ViewController: UIViewController {
         get {
             return true
         }
-    } 
+    }
 
 }
 
