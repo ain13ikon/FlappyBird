@@ -17,6 +17,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
     var itemNode: SKNode!
     var bird: SKSpriteNode!
     
+    var birdSize: CGFloat = 0.0   //鳥のサイズ
+    
     var itemSePlayer: AVAudioPlayer!
     var gameOverSePlayer: AVAudioPlayer!
     
@@ -53,11 +55,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         wallNode = SKNode()
         scrollNode.addChild(wallNode)
         
-        
+        setBird()
         setCloud()
         setGround()
         setWall()
-        setBird()
+        
         
         setupScoreLabel()
         
@@ -166,6 +168,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         bird.physicsBody?.contactTestBitMask = self.groundCategory | self.wallCategory | self.itemCategory
         bird.physicsBody?.collisionBitMask = self.groundCategory | self.wallCategory
         
+        //鳥のサイズ
+        self.birdSize = bird.size.height
+        print("鳥のサイズ：\(birdSize)")
+        
         // アニメーションを設定
         bird.run(flap)
         
@@ -264,9 +270,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
         
         //壁の動きのアクションを作成
         //移動距離を求める
+        //画面サイズによって速さを動的に変更する
         let movingDistance = CGFloat(self.frame.size.width + wallTexture.size().width)
+        print("移動距離：\(movingDistance + 100)")
+        let standardDuration = TimeInterval((movingDistance + 100) / 554 * 4)
+        print("移動時間：\(standardDuration)")
+
         //アクション①：場外まで移動(itemがすぐに消えないように-100まで壁を移動させる)
-        let moveWall = SKAction.moveBy(x: -movingDistance - 100, y: 0, duration: 4.0)
+        let moveWall = SKAction.moveBy(x: -movingDistance - 100, y: 0, duration: standardDuration)
+            //duration(移動にかかる時間)は移動距離554に対して4秒が基準になるようにする（iPhone8Plusより）
+            //これにより壁の出現間隔、移動スピードがほぼ同じになるので、アイテム出現のX座標規準位置は壁基準の固定値にして良い
         //アクション②：自身を取り除く
         let removeWall = SKAction.removeFromParent()
         //①②を組み合わせる
@@ -296,7 +309,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             let under_wall_y = CGFloat(under_wall_lowest_y + random_y)
             
             // キャラが通り抜ける隙間の長さ
-            let slit_length = self.frame.size.height / 6
+            //let slit_length = self.frame.size.height / 6
+            let slit_length = CGFloat(self.birdSize * 3 + 10)  //40は鳥のサイズ
             
 
             //下の壁を作成
@@ -337,11 +351,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
                 let itemTexture = SKTexture(imageNamed: "apple")
                 itemTexture.filteringMode = .linear
                 let itemSprite = SKSpriteNode(texture: itemTexture)
-                let randomX = Int(arc4random_uniform(41)) - 20  //-20~20の乱数を作る
-                let randomY = Int(arc4random_uniform(101)) - 50  //-50~20の乱数を作る
+                let randomX = Double(arc4random_uniform(41)) - 20  //-20~20の乱数を作る
+                let randomY = Double(arc4random_uniform(101)) - 50  //-50~20の乱数を作る
                 print("(\(randomX),\(randomY))")
-                itemSprite.position = CGPoint(x: 120 + randomX, y: 400 + randomY)
+                //let standardX = Double(20 / 69 * self.frame.size.width)   //壁規準なので不要
+                let standardY = Double(25 / 46 * self.frame.size.height)
+                print("基準は(\(120),\(standardY))")
+                itemSprite.position = CGPoint(x: 120 + randomX, y: standardY + randomY)
                 //取りやすそうな(120,400)を基準値として乱数で(110~150, 350~450)にずらす
+                //iPhone8Plus(414,736)の時↑
+                //比率で考えて(120/414*width,400/736*height)を基準値とする
+                print("8Plus(\(self.frame.size.width),\(self.frame.size.height))")
                 itemSprite.physicsBody = SKPhysicsBody(circleOfRadius: itemSprite.size.height / 2.0)
                 //itemSprite.physicsBody?.isDynamic = false //力によって動こない
                 itemSprite.physicsBody?.affectedByGravity = false   //重力によって動かない
@@ -403,10 +423,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, AVAudioPlayerDelegate {
             }
             
         } else if (contact.bodyA.categoryBitMask & itemCategory) == itemCategory {
+            //アイテムと衝突したA
             print("ItemGet:A")
             contact.bodyA.node!.removeFromParent()
             getItem(point: contact.contactPoint)
         } else if (contact.bodyB.categoryBitMask & itemCategory) == itemCategory {
+            //アイテムと衝突したB
             print("ItemGet:B")
             contact.bodyB.node!.removeFromParent()
             getItem(point: contact.contactPoint)
